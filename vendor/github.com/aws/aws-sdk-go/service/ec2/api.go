@@ -554,6 +554,10 @@ func (c *EC2) AllocateAddressRequest(input *AllocateAddressInput) (req *request.
 // For more information, see Elastic IP Addresses (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html)
 // in the Amazon Elastic Compute Cloud User Guide.
 //
+// You can allocate a carrier IP address which is a public IP address from a
+// telecommunication carrier, to a network interface which resides in a subnet
+// in a Wavelength Zone (for example an EC2 instance).
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -955,7 +959,8 @@ func (c *EC2) AssociateAddressRequest(input *AssociateAddressInput) (req *reques
 
 // AssociateAddress API operation for Amazon Elastic Compute Cloud.
 //
-// Associates an Elastic IP address with an instance or a network interface.
+// Associates an Elastic IP address, or carrier IP address (for instances that
+// are in subnets in Wavelength Zones) with an instance or a network interface.
 // Before you can use an Elastic IP address, you must allocate it to your account.
 //
 // An Elastic IP address is for use in either the EC2-Classic platform or in
@@ -975,6 +980,9 @@ func (c *EC2) AssociateAddressRequest(input *AssociateAddressInput) (req *reques
 // interface, you get an error unless you allow reassociation. You cannot associate
 // an Elastic IP address with an instance or network interface that has an existing
 // Elastic IP address.
+//
+// [Subnets in Wavelength Zones] You can associate an IP address from the telecommunication
+// carrier to the instance or network interface.
 //
 // You cannot associate an Elastic IP address with an interface in a different
 // network border group.
@@ -3453,6 +3461,82 @@ func (c *EC2) CreateCapacityReservationWithContext(ctx aws.Context, input *Creat
 	return out, req.Send()
 }
 
+const opCreateCarrierGateway = "CreateCarrierGateway"
+
+// CreateCarrierGatewayRequest generates a "aws/request.Request" representing the
+// client's request for the CreateCarrierGateway operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateCarrierGateway for more information on using the CreateCarrierGateway
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the CreateCarrierGatewayRequest method.
+//    req, resp := client.CreateCarrierGatewayRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateCarrierGateway
+func (c *EC2) CreateCarrierGatewayRequest(input *CreateCarrierGatewayInput) (req *request.Request, output *CreateCarrierGatewayOutput) {
+	op := &request.Operation{
+		Name:       opCreateCarrierGateway,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateCarrierGatewayInput{}
+	}
+
+	output = &CreateCarrierGatewayOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateCarrierGateway API operation for Amazon Elastic Compute Cloud.
+//
+// Creates a carrier gateway. For more information about carrier gateways, see
+// Carrier gateways (https://docs.aws.amazon.com/wavelength/latest/developerguide/how-wavelengths-work.html#wavelength-carrier-gateway)
+// in the AWS Wavelength Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation CreateCarrierGateway for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/CreateCarrierGateway
+func (c *EC2) CreateCarrierGateway(input *CreateCarrierGatewayInput) (*CreateCarrierGatewayOutput, error) {
+	req, out := c.CreateCarrierGatewayRequest(input)
+	return out, req.Send()
+}
+
+// CreateCarrierGatewayWithContext is the same as CreateCarrierGateway with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateCarrierGateway for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) CreateCarrierGatewayWithContext(ctx aws.Context, input *CreateCarrierGatewayInput, opts ...request.Option) (*CreateCarrierGatewayOutput, error) {
+	req, out := c.CreateCarrierGatewayRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateClientVpnEndpoint = "CreateClientVpnEndpoint"
 
 // CreateClientVpnEndpointRequest generates a "aws/request.Request" representing the
@@ -3926,13 +4010,13 @@ func (c *EC2) CreateDhcpOptionsRequest(input *CreateDhcpOptionsInput) (req *requ
 //    * domain-name - If you're using AmazonProvidedDNS in us-east-1, specify
 //    ec2.internal. If you're using AmazonProvidedDNS in another Region, specify
 //    region.compute.internal (for example, ap-northeast-1.compute.internal).
-//    Otherwise, specify a domain name (for example, MyCompany.com). This value
-//    is used to complete unqualified DNS hostnames. Important: Some Linux operating
-//    systems accept multiple domain names separated by spaces. However, Windows
-//    and other Linux operating systems treat the value as a single domain,
-//    which results in unexpected behavior. If your DHCP options set is associated
-//    with a VPC that has instances with multiple operating systems, specify
-//    only one domain name.
+//    Otherwise, specify a domain name (for example, ExampleCompany.com). This
+//    value is used to complete unqualified DNS hostnames. Important: Some Linux
+//    operating systems accept multiple domain names separated by spaces. However,
+//    Windows and other Linux operating systems treat the value as a single
+//    domain, which results in unexpected behavior. If your DHCP options set
+//    is associated with a VPC that has instances with multiple operating systems,
+//    specify only one domain name.
 //
 //    * ntp-servers - The IP addresses of up to four Network Time Protocol (NTP)
 //    servers.
@@ -6100,7 +6184,7 @@ func (c *EC2) CreateSpotDatafeedSubscriptionRequest(input *CreateSpotDatafeedSub
 //
 // Creates a data feed for Spot Instances, enabling you to view Spot Instance
 // usage logs. You can create one data feed per AWS account. For more information,
-// see Spot Instance Data Feed (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-data-feeds.html)
+// see Spot Instance data feed (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-data-feeds.html)
 // in the Amazon EC2 User Guide for Linux Instances.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -7898,6 +7982,84 @@ func (c *EC2) CreateVpnGateway(input *CreateVpnGatewayInput) (*CreateVpnGatewayO
 // for more information on using Contexts.
 func (c *EC2) CreateVpnGatewayWithContext(ctx aws.Context, input *CreateVpnGatewayInput, opts ...request.Option) (*CreateVpnGatewayOutput, error) {
 	req, out := c.CreateVpnGatewayRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteCarrierGateway = "DeleteCarrierGateway"
+
+// DeleteCarrierGatewayRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteCarrierGateway operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteCarrierGateway for more information on using the DeleteCarrierGateway
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeleteCarrierGatewayRequest method.
+//    req, resp := client.DeleteCarrierGatewayRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteCarrierGateway
+func (c *EC2) DeleteCarrierGatewayRequest(input *DeleteCarrierGatewayInput) (req *request.Request, output *DeleteCarrierGatewayOutput) {
+	op := &request.Operation{
+		Name:       opDeleteCarrierGateway,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteCarrierGatewayInput{}
+	}
+
+	output = &DeleteCarrierGatewayOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteCarrierGateway API operation for Amazon Elastic Compute Cloud.
+//
+// Deletes a carrier gateway.
+//
+// If you do not delete the route that contains the carrier gateway as the Target,
+// the route is a blackhole route. For information about how to delete a route,
+// see DeleteRoute (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DeleteRoute.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DeleteCarrierGateway for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DeleteCarrierGateway
+func (c *EC2) DeleteCarrierGateway(input *DeleteCarrierGatewayInput) (*DeleteCarrierGatewayOutput, error) {
+	req, out := c.DeleteCarrierGatewayRequest(input)
+	return out, req.Send()
+}
+
+// DeleteCarrierGatewayWithContext is the same as DeleteCarrierGateway with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteCarrierGateway for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DeleteCarrierGatewayWithContext(ctx aws.Context, input *DeleteCarrierGatewayInput, opts ...request.Option) (*DeleteCarrierGatewayOutput, error) {
+	req, out := c.DeleteCarrierGatewayRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -12271,13 +12433,12 @@ func (c *EC2) DescribeAvailabilityZonesRequest(input *DescribeAvailabilityZonesI
 
 // DescribeAvailabilityZones API operation for Amazon Elastic Compute Cloud.
 //
-// Describes the Availability Zones and Local Zones that are available to you.
-// If there is an event impacting an Availability Zone or Local Zone, you can
-// use this request to view the state and any provided messages for that Availability
-// Zone or Local Zone.
+// Describes the Availability Zones, Local Zones, and Wavelength Zones that
+// are available to you. If there is an event impacting a zone, you can use
+// this request to view the state and any provided messages for that zone.
 //
-// For more information about Availability Zones and Local Zones, see Regions
-// and Availability Zones (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html)
+// For more information about Availability Zones, Local Zones, and Wavelength
+// Zones, see Regions, Zones and Outposts (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html)
 // in the Amazon Elastic Compute Cloud User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -12648,6 +12809,138 @@ func (c *EC2) DescribeCapacityReservationsPagesWithContext(ctx aws.Context, inpu
 
 	for p.Next() {
 		if !fn(p.Page().(*DescribeCapacityReservationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeCarrierGateways = "DescribeCarrierGateways"
+
+// DescribeCarrierGatewaysRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeCarrierGateways operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeCarrierGateways for more information on using the DescribeCarrierGateways
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DescribeCarrierGatewaysRequest method.
+//    req, resp := client.DescribeCarrierGatewaysRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeCarrierGateways
+func (c *EC2) DescribeCarrierGatewaysRequest(input *DescribeCarrierGatewaysInput) (req *request.Request, output *DescribeCarrierGatewaysOutput) {
+	op := &request.Operation{
+		Name:       opDescribeCarrierGateways,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeCarrierGatewaysInput{}
+	}
+
+	output = &DescribeCarrierGatewaysOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeCarrierGateways API operation for Amazon Elastic Compute Cloud.
+//
+// Describes one or more of your carrier gateways.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation DescribeCarrierGateways for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/DescribeCarrierGateways
+func (c *EC2) DescribeCarrierGateways(input *DescribeCarrierGatewaysInput) (*DescribeCarrierGatewaysOutput, error) {
+	req, out := c.DescribeCarrierGatewaysRequest(input)
+	return out, req.Send()
+}
+
+// DescribeCarrierGatewaysWithContext is the same as DescribeCarrierGateways with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeCarrierGateways for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeCarrierGatewaysWithContext(ctx aws.Context, input *DescribeCarrierGatewaysInput, opts ...request.Option) (*DescribeCarrierGatewaysOutput, error) {
+	req, out := c.DescribeCarrierGatewaysRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeCarrierGatewaysPages iterates over the pages of a DescribeCarrierGateways operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeCarrierGateways method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//    // Example iterating over at most 3 pages of a DescribeCarrierGateways operation.
+//    pageNum := 0
+//    err := client.DescribeCarrierGatewaysPages(params,
+//        func(page *ec2.DescribeCarrierGatewaysOutput, lastPage bool) bool {
+//            pageNum++
+//            fmt.Println(page)
+//            return pageNum <= 3
+//        })
+//
+func (c *EC2) DescribeCarrierGatewaysPages(input *DescribeCarrierGatewaysInput, fn func(*DescribeCarrierGatewaysOutput, bool) bool) error {
+	return c.DescribeCarrierGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeCarrierGatewaysPagesWithContext same as DescribeCarrierGatewaysPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) DescribeCarrierGatewaysPagesWithContext(ctx aws.Context, input *DescribeCarrierGatewaysInput, fn func(*DescribeCarrierGatewaysOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeCarrierGatewaysInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeCarrierGatewaysRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeCarrierGatewaysOutput), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -17464,7 +17757,9 @@ func (c *EC2) DescribeLaunchTemplateVersionsRequest(input *DescribeLaunchTemplat
 // DescribeLaunchTemplateVersions API operation for Amazon Elastic Compute Cloud.
 //
 // Describes one or more versions of a specified launch template. You can describe
-// all versions, individual versions, or a range of versions.
+// all versions, individual versions, or a range of versions. You can also describe
+// all the latest versions or all the default versions of all the launch templates
+// in your account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -21302,7 +21597,7 @@ func (c *EC2) DescribeSpotDatafeedSubscriptionRequest(input *DescribeSpotDatafee
 // DescribeSpotDatafeedSubscription API operation for Amazon Elastic Compute Cloud.
 //
 // Describes the data feed for Spot Instances. For more information, see Spot
-// Instance Data Feed (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-data-feeds.html)
+// Instance data feed (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-data-feeds.html)
 // in the Amazon EC2 User Guide for Linux Instances.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -21820,7 +22115,7 @@ func (c *EC2) DescribeSpotPriceHistoryRequest(input *DescribeSpotPriceHistoryInp
 // DescribeSpotPriceHistory API operation for Amazon Elastic Compute Cloud.
 //
 // Describes the Spot price history. For more information, see Spot Instance
-// Pricing History (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances-history.html)
+// pricing history (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-spot-instances-history.html)
 // in the Amazon EC2 User Guide for Linux Instances.
 //
 // When you specify a start and end time, this operation returns the prices
@@ -28523,6 +28818,138 @@ func (c *EC2) GetEbsEncryptionByDefaultWithContext(ctx aws.Context, input *GetEb
 	return out, req.Send()
 }
 
+const opGetGroupsForCapacityReservation = "GetGroupsForCapacityReservation"
+
+// GetGroupsForCapacityReservationRequest generates a "aws/request.Request" representing the
+// client's request for the GetGroupsForCapacityReservation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetGroupsForCapacityReservation for more information on using the GetGroupsForCapacityReservation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the GetGroupsForCapacityReservationRequest method.
+//    req, resp := client.GetGroupsForCapacityReservationRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetGroupsForCapacityReservation
+func (c *EC2) GetGroupsForCapacityReservationRequest(input *GetGroupsForCapacityReservationInput) (req *request.Request, output *GetGroupsForCapacityReservationOutput) {
+	op := &request.Operation{
+		Name:       opGetGroupsForCapacityReservation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &GetGroupsForCapacityReservationInput{}
+	}
+
+	output = &GetGroupsForCapacityReservationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetGroupsForCapacityReservation API operation for Amazon Elastic Compute Cloud.
+//
+// Lists the resource groups to which a Capacity Reservation has been added.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Compute Cloud's
+// API operation GetGroupsForCapacityReservation for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-2016-11-15/GetGroupsForCapacityReservation
+func (c *EC2) GetGroupsForCapacityReservation(input *GetGroupsForCapacityReservationInput) (*GetGroupsForCapacityReservationOutput, error) {
+	req, out := c.GetGroupsForCapacityReservationRequest(input)
+	return out, req.Send()
+}
+
+// GetGroupsForCapacityReservationWithContext is the same as GetGroupsForCapacityReservation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetGroupsForCapacityReservation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) GetGroupsForCapacityReservationWithContext(ctx aws.Context, input *GetGroupsForCapacityReservationInput, opts ...request.Option) (*GetGroupsForCapacityReservationOutput, error) {
+	req, out := c.GetGroupsForCapacityReservationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// GetGroupsForCapacityReservationPages iterates over the pages of a GetGroupsForCapacityReservation operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See GetGroupsForCapacityReservation method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//    // Example iterating over at most 3 pages of a GetGroupsForCapacityReservation operation.
+//    pageNum := 0
+//    err := client.GetGroupsForCapacityReservationPages(params,
+//        func(page *ec2.GetGroupsForCapacityReservationOutput, lastPage bool) bool {
+//            pageNum++
+//            fmt.Println(page)
+//            return pageNum <= 3
+//        })
+//
+func (c *EC2) GetGroupsForCapacityReservationPages(input *GetGroupsForCapacityReservationInput, fn func(*GetGroupsForCapacityReservationOutput, bool) bool) error {
+	return c.GetGroupsForCapacityReservationPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// GetGroupsForCapacityReservationPagesWithContext same as GetGroupsForCapacityReservationPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EC2) GetGroupsForCapacityReservationPagesWithContext(ctx aws.Context, input *GetGroupsForCapacityReservationInput, fn func(*GetGroupsForCapacityReservationOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *GetGroupsForCapacityReservationInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.GetGroupsForCapacityReservationRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*GetGroupsForCapacityReservationOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opGetHostReservationPurchasePreview = "GetHostReservationPurchasePreview"
 
 // GetHostReservationPurchasePreviewRequest generates a "aws/request.Request" representing the
@@ -28648,6 +29075,12 @@ func (c *EC2) GetLaunchTemplateDataRequest(input *GetLaunchTemplateDataInput) (r
 //
 // Retrieves the configuration data of the specified instance. You can use this
 // data to create a launch template.
+//
+// This action calls on other describe actions to get instance information.
+// Depending on your instance configuration, you may need to allow the following
+// actions in your IAM policy: DescribeSpotInstanceRequests, DescribeInstanceCreditSpecifications,
+// DescribeVolumes, DescribeInstanceAttribute, and DescribeElasticGpus. Or,
+// you can allow describe* depending on your instance requirements.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -30154,9 +30587,10 @@ func (c *EC2) ModifyAvailabilityZoneGroupRequest(input *ModifyAvailabilityZoneGr
 
 // ModifyAvailabilityZoneGroup API operation for Amazon Elastic Compute Cloud.
 //
-// Enables or disables an Availability Zone group for your account.
+// Changes the opt-in status of the Local Zone and Wavelength Zone group for
+// your account.
 //
-// Use describe-availability-zones (https://docs.aws.amazon.com/AWSEC2ApiDocReef/build/server-root/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html)
+// Use DescribeAvailabilityZones (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html)
 // to view the value for GroupName.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -34085,7 +34519,7 @@ func (c *EC2) RegisterImageRequest(input *RegisterImageInput) (req *request.Requ
 //
 // Registers an AMI. When you're creating an AMI, this is the final step you
 // must complete before you can launch an instance from the AMI. For more information
-// about creating AMIs, see Creating Your Own AMIs (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/creating-an-ami.html)
+// about creating AMIs, see Creating your own AMIs (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/creating-an-ami.html)
 // in the Amazon Elastic Compute Cloud User Guide.
 //
 // For Amazon EBS-backed instances, CreateImage creates and registers the AMI
@@ -34093,12 +34527,12 @@ func (c *EC2) RegisterImageRequest(input *RegisterImageInput) (req *request.Requ
 //
 // You can also use RegisterImage to create an Amazon EBS-backed Linux AMI from
 // a snapshot of a root device volume. You specify the snapshot using the block
-// device mapping. For more information, see Launching a Linux Instance from
-// a Backup (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-launch-snapshot.html)
+// device mapping. For more information, see Launching a Linux instance from
+// a backup (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-launch-snapshot.html)
 // in the Amazon Elastic Compute Cloud User Guide.
 //
-// You can't register an image where a secondary (non-root) snapshot has AWS
-// Marketplace product codes.
+// If any snapshots have AWS Marketplace product codes, they are copied to the
+// new AMI.
 //
 // Windows and some Linux distributions, such as Red Hat Enterprise Linux (RHEL)
 // and SUSE Linux Enterprise Server (SLES), use the EC2 billing product code
@@ -34119,7 +34553,7 @@ func (c *EC2) RegisterImageRequest(input *RegisterImageInput) (req *request.Requ
 // a Reserved Instance without the matching billing product code, the Reserved
 // Instance will not be applied to the On-Demand Instance. For information about
 // how to obtain the platform details and billing information of an AMI, see
-// Obtaining Billing Information (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-billing-info.html)
+// Obtaining billing information (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ami-billing-info.html)
 // in the Amazon Elastic Compute Cloud User Guide.
 //
 // If needed, you can deregister an AMI at any time. Any modifications you make
@@ -35497,7 +35931,7 @@ func (c *EC2) RequestSpotFleetRequest(input *RequestSpotFleetInput) (req *reques
 // the fleet. You cannot tag other resource types in a Spot Fleet request because
 // only the spot-fleet-request and instance resource types are supported.
 //
-// For more information, see Spot Fleet Requests (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-requests.html)
+// For more information, see Spot Fleet requests (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-requests.html)
 // in the Amazon EC2 User Guide for Linux Instances.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -35574,7 +36008,7 @@ func (c *EC2) RequestSpotInstancesRequest(input *RequestSpotInstancesInput) (req
 //
 // Creates a Spot Instance request.
 //
-// For more information, see Spot Instance Requests (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html)
+// For more information, see Spot Instance requests (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-requests.html)
 // in the Amazon EC2 User Guide for Linux Instances.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -38604,7 +39038,7 @@ func (s *AddPrefixListEntry) SetDescription(v string) *AddPrefixListEntry {
 	return s
 }
 
-// Describes an Elastic IP address.
+// Describes an Elastic IP address, or a carrier IP address.
 type Address struct {
 	_ struct{} `type:"structure"`
 
@@ -38614,6 +39048,11 @@ type Address struct {
 	// The ID representing the association of the address with an instance in a
 	// VPC.
 	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// The carrier IP address associated. This option is only available for network
+	// interfaces which reside in a subnet in a Wavelength Zone (for example an
+	// EC2 instance).
+	CarrierIp *string `locationName:"carrierIp" type:"string"`
 
 	// The customer-owned IP address.
 	CustomerOwnedIp *string `locationName:"customerOwnedIp" type:"string"`
@@ -38628,7 +39067,8 @@ type Address struct {
 	// The ID of the instance that the address is associated with (if any).
 	InstanceId *string `locationName:"instanceId" type:"string"`
 
-	// The name of the location from which the IP address is advertised.
+	// The name of the unique set of Availability Zones, Local Zones, or Wavelength
+	// Zones from which AWS advertises IP addresses.
 	NetworkBorderGroup *string `locationName:"networkBorderGroup" type:"string"`
 
 	// The ID of the network interface.
@@ -38669,6 +39109,12 @@ func (s *Address) SetAllocationId(v string) *Address {
 // SetAssociationId sets the AssociationId field's value.
 func (s *Address) SetAssociationId(v string) *Address {
 	s.AssociationId = &v
+	return s
+}
+
+// SetCarrierIp sets the CarrierIp field's value.
+func (s *Address) SetCarrierIp(v string) *Address {
+	s.CarrierIp = &v
 	return s
 }
 
@@ -38824,9 +39270,11 @@ type AllocateAddressInput struct {
 	// address from the address pool.
 	CustomerOwnedIpv4Pool *string `type:"string"`
 
-	// Set to vpc to allocate the address for use with instances in a VPC.
+	// Indicates whether the Elastic IP address is for use with instances in a VPC
+	// or instances in EC2-Classic.
 	//
-	// Default: The address is for use with instances in EC2-Classic.
+	// Default: If the Region supports EC2-Classic, the default is standard. Otherwise,
+	// the default is vpc.
 	Domain *string `type:"string" enum:"DomainType"`
 
 	// Checks whether you have the required permissions for the action, without
@@ -38835,12 +39283,9 @@ type AllocateAddressInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// The location from which the IP address is advertised. Use this parameter
-	// to limit the address to this location.
-	//
-	// A network border group is a unique set of Availability Zones or Local Zones
-	// from where AWS advertises IP addresses and limits the addresses to the group.
-	// IP addresses cannot move between network border groups.
+	// A unique set of Availability Zones, Local Zones, or Wavelength Zones from
+	// which AWS advertises IP addresses. Use this parameter to limit the IP address
+	// to this location. IP addresses cannot move between network border groups.
 	//
 	// Use DescribeAvailabilityZones (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeAvailabilityZones.html)
 	// to view the network border groups.
@@ -38909,17 +39354,22 @@ type AllocateAddressOutput struct {
 	// IP address for use with instances in a VPC.
 	AllocationId *string `locationName:"allocationId" type:"string"`
 
+	// The carrier IP address. This option is only available for network interfaces
+	// which reside in a subnet in a Wavelength Zone (for example an EC2 instance).
+	CarrierIp *string `locationName:"carrierIp" type:"string"`
+
 	// The customer-owned IP address.
 	CustomerOwnedIp *string `locationName:"customerOwnedIp" type:"string"`
 
 	// The ID of the customer-owned address pool.
 	CustomerOwnedIpv4Pool *string `locationName:"customerOwnedIpv4Pool" type:"string"`
 
-	// Indicates whether this Elastic IP address is for use with instances in EC2-Classic
-	// (standard) or instances in a VPC (vpc).
+	// Indicates whether the Elastic IP address is for use with instances in a VPC
+	// (vpc) or instances in EC2-Classic (standard).
 	Domain *string `locationName:"domain" type:"string" enum:"DomainType"`
 
-	// The location from which the IP address is advertised.
+	// The set of Availability Zones, Local Zones, or Wavelength Zones from which
+	// AWS advertises IP addresses.
 	NetworkBorderGroup *string `locationName:"networkBorderGroup" type:"string"`
 
 	// The Elastic IP address.
@@ -38942,6 +39392,12 @@ func (s AllocateAddressOutput) GoString() string {
 // SetAllocationId sets the AllocationId field's value.
 func (s *AllocateAddressOutput) SetAllocationId(v string) *AllocateAddressOutput {
 	s.AllocationId = &v
+	return s
+}
+
+// SetCarrierIp sets the CarrierIp field's value.
+func (s *AllocateAddressOutput) SetCarrierIp(v string) *AllocateAddressOutput {
+	s.CarrierIp = &v
 	return s
 }
 
@@ -40237,7 +40693,7 @@ type AssociateVpcCidrBlockInput struct {
 	Ipv6CidrBlock *string `type:"string"`
 
 	// The name of the location from which we advertise the IPV6 CIDR block. Use
-	// this parameter to limit the CiDR block to this location.
+	// this parameter to limit the CIDR block to this location.
 	//
 	// You must set AmazonProvidedIpv6CidrBlock to true to use this parameter.
 	//
@@ -40994,11 +41450,13 @@ type AuthorizeClientVpnIngressInput struct {
 	_ struct{} `type:"structure"`
 
 	// The ID of the group to grant access to, for example, the Active Directory
-	// group or identity provider (IdP) group.
+	// group or identity provider (IdP) group. Required if AuthorizeAllGroups is
+	// false or not specified.
 	AccessGroupId *string `type:"string"`
 
-	// Indicates whether to grant access to all clients. Use true to grant all clients
-	// who successfully establish a VPN connection access to the network.
+	// Indicates whether to grant access to all clients. Specify true to grant all
+	// clients who successfully establish a VPN connection access to the network.
+	// Must be set to true if AccessGroupId is not specified.
 	AuthorizeAllGroups *bool `type:"boolean"`
 
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency
@@ -41406,38 +41864,52 @@ func (s AuthorizeSecurityGroupIngressOutput) GoString() string {
 	return s.String()
 }
 
-// Describes an Availability Zone or Local Zone.
+// Describes Availability Zones, Local Zones, and Wavelength Zones.
 type AvailabilityZone struct {
 	_ struct{} `type:"structure"`
 
 	// For Availability Zones, this parameter has the same value as the Region name.
 	//
 	// For Local Zones, the name of the associated group, for example us-west-2-lax-1.
+	//
+	// For Wavelength Zones, the name of the associated group, for example us-east-1-wl1-bos-wlz-1.
 	GroupName *string `locationName:"groupName" type:"string"`
 
-	// Any messages about the Availability Zone or Local Zone.
+	// Any messages about the Availability Zone, Local Zone, or Wavelength Zone.
 	Messages []*AvailabilityZoneMessage `locationName:"messageSet" locationNameList:"item" type:"list"`
 
-	// The name of the location from which the address is advertised.
+	// The name of the network border group.
 	NetworkBorderGroup *string `locationName:"networkBorderGroup" type:"string"`
 
 	// For Availability Zones, this parameter always has the value of opt-in-not-required.
 	//
-	// For Local Zones, this parameter is the opt in status. The possible values
-	// are opted-in, and not-opted-in.
+	// For Local Zones and Wavelength Zones, this parameter is the opt-in status.
+	// The possible values are opted-in, and not-opted-in.
 	OptInStatus *string `locationName:"optInStatus" type:"string" enum:"AvailabilityZoneOptInStatus"`
+
+	// The ID of the zone that handles some of the Local Zone or Wavelength Zone
+	// control plane operations, such as API calls.
+	ParentZoneId *string `locationName:"parentZoneId" type:"string"`
+
+	// The name of the zone that handles some of the Local Zone or Wavelength Zone
+	// control plane operations, such as API calls.
+	ParentZoneName *string `locationName:"parentZoneName" type:"string"`
 
 	// The name of the Region.
 	RegionName *string `locationName:"regionName" type:"string"`
 
-	// The state of the Availability Zone or Local Zone.
+	// The state of the Availability Zone, Local Zone, or Wavelength Zone.
 	State *string `locationName:"zoneState" type:"string" enum:"AvailabilityZoneState"`
 
-	// The ID of the Availability Zone or Local Zone.
+	// The ID of the Availability Zone, Local Zone, or Wavelength Zone.
 	ZoneId *string `locationName:"zoneId" type:"string"`
 
-	// The name of the Availability Zone or Local Zone.
+	// The name of the Availability Zone, Local Zone, or Wavelength Zone.
 	ZoneName *string `locationName:"zoneName" type:"string"`
+
+	// The type of zone. The valid values are availability-zone, local-zone, and
+	// wavelength-zone.
+	ZoneType *string `locationName:"zoneType" type:"string"`
 }
 
 // String returns the string representation
@@ -41474,6 +41946,18 @@ func (s *AvailabilityZone) SetOptInStatus(v string) *AvailabilityZone {
 	return s
 }
 
+// SetParentZoneId sets the ParentZoneId field's value.
+func (s *AvailabilityZone) SetParentZoneId(v string) *AvailabilityZone {
+	s.ParentZoneId = &v
+	return s
+}
+
+// SetParentZoneName sets the ParentZoneName field's value.
+func (s *AvailabilityZone) SetParentZoneName(v string) *AvailabilityZone {
+	s.ParentZoneName = &v
+	return s
+}
+
 // SetRegionName sets the RegionName field's value.
 func (s *AvailabilityZone) SetRegionName(v string) *AvailabilityZone {
 	s.RegionName = &v
@@ -41498,11 +41982,18 @@ func (s *AvailabilityZone) SetZoneName(v string) *AvailabilityZone {
 	return s
 }
 
-// Describes a message about an Availability Zone or Local Zone.
+// SetZoneType sets the ZoneType field's value.
+func (s *AvailabilityZone) SetZoneType(v string) *AvailabilityZone {
+	s.ZoneType = &v
+	return s
+}
+
+// Describes a message about an Availability Zone, Local Zone, or Wavelength
+// Zone.
 type AvailabilityZoneMessage struct {
 	_ struct{} `type:"structure"`
 
-	// The message about the Availability Zone or Local Zone.
+	// The message about the Availability Zone, Local Zone, or Wavelength Zone.
 	Message *string `locationName:"message" type:"string"`
 }
 
@@ -42885,6 +43376,39 @@ func (s *CapacityReservation) SetTotalInstanceCount(v int64) *CapacityReservatio
 	return s
 }
 
+// Describes a resource group to which a Capacity Reservation has been added.
+type CapacityReservationGroup struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the resource group.
+	GroupArn *string `locationName:"groupArn" type:"string"`
+
+	// The ID of the AWS account that owns the resource group.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+}
+
+// String returns the string representation
+func (s CapacityReservationGroup) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CapacityReservationGroup) GoString() string {
+	return s.String()
+}
+
+// SetGroupArn sets the GroupArn field's value.
+func (s *CapacityReservationGroup) SetGroupArn(v string) *CapacityReservationGroup {
+	s.GroupArn = &v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *CapacityReservationGroup) SetOwnerId(v string) *CapacityReservationGroup {
+	s.OwnerId = &v
+	return s
+}
+
 // Describes the strategy for using unused Capacity Reservations for fulfilling
 // On-Demand capacity.
 //
@@ -42983,7 +43507,7 @@ func (s *CapacityReservationOptionsRequest) SetUsageStrategy(v string) *Capacity
 // to run as an On-Demand Instance or to run in any open Capacity Reservation
 // that has matching attributes (instance type, platform, Availability Zone).
 // Use the CapacityReservationTarget parameter to explicitly target a specific
-// Capacity Reservation.
+// Capacity Reservation or a Capacity Reservation group.
 type CapacityReservationSpecification struct {
 	_ struct{} `type:"structure"`
 
@@ -42997,7 +43521,8 @@ type CapacityReservationSpecification struct {
 	//    one is available. The instance runs as an On-Demand Instance.
 	CapacityReservationPreference *string `type:"string" enum:"CapacityReservationPreference"`
 
-	// Information about the target Capacity Reservation.
+	// Information about the target Capacity Reservation or Capacity Reservation
+	// group.
 	CapacityReservationTarget *CapacityReservationTarget `type:"structure"`
 }
 
@@ -43028,7 +43553,8 @@ func (s *CapacityReservationSpecification) SetCapacityReservationTarget(v *Capac
 // instance is configured to run in On-Demand capacity, or if it is configured
 // in run in any open Capacity Reservation that has matching attributes (instance
 // type, platform, Availability Zone). The action returns the capacityReservationTarget
-// response element if the instance explicily targets a specific Capacity Reservation.
+// response element if the instance explicily targets a specific Capacity Reservation
+// or Capacity Reservation group.
 type CapacityReservationSpecificationResponse struct {
 	_ struct{} `type:"structure"`
 
@@ -43042,7 +43568,8 @@ type CapacityReservationSpecificationResponse struct {
 	//    one is available. The instance runs in On-Demand capacity.
 	CapacityReservationPreference *string `locationName:"capacityReservationPreference" type:"string" enum:"CapacityReservationPreference"`
 
-	// Information about the targeted Capacity Reservation.
+	// Information about the targeted Capacity Reservation or Capacity Reservation
+	// group.
 	CapacityReservationTarget *CapacityReservationTargetResponse `locationName:"capacityReservationTarget" type:"structure"`
 }
 
@@ -43068,12 +43595,15 @@ func (s *CapacityReservationSpecificationResponse) SetCapacityReservationTarget(
 	return s
 }
 
-// Describes a target Capacity Reservation.
+// Describes a target Capacity Reservation or Capacity Reservation group.
 type CapacityReservationTarget struct {
 	_ struct{} `type:"structure"`
 
-	// The ID of the Capacity Reservation.
+	// The ID of the Capacity Reservation in which to run the instance.
 	CapacityReservationId *string `type:"string"`
+
+	// The ARN of the Capacity Reservation resource group in which to run the instance.
+	CapacityReservationResourceGroupArn *string `type:"string"`
 }
 
 // String returns the string representation
@@ -43092,12 +43622,21 @@ func (s *CapacityReservationTarget) SetCapacityReservationId(v string) *Capacity
 	return s
 }
 
-// Describes a target Capacity Reservation.
+// SetCapacityReservationResourceGroupArn sets the CapacityReservationResourceGroupArn field's value.
+func (s *CapacityReservationTarget) SetCapacityReservationResourceGroupArn(v string) *CapacityReservationTarget {
+	s.CapacityReservationResourceGroupArn = &v
+	return s
+}
+
+// Describes a target Capacity Reservation or Capacity Reservation group.
 type CapacityReservationTargetResponse struct {
 	_ struct{} `type:"structure"`
 
-	// The ID of the Capacity Reservation.
+	// The ID of the targeted Capacity Reservation.
 	CapacityReservationId *string `locationName:"capacityReservationId" type:"string"`
+
+	// The ARN of the targeted Capacity Reservation group.
+	CapacityReservationResourceGroupArn *string `locationName:"capacityReservationResourceGroupArn" type:"string"`
 }
 
 // String returns the string representation
@@ -43113,6 +43652,72 @@ func (s CapacityReservationTargetResponse) GoString() string {
 // SetCapacityReservationId sets the CapacityReservationId field's value.
 func (s *CapacityReservationTargetResponse) SetCapacityReservationId(v string) *CapacityReservationTargetResponse {
 	s.CapacityReservationId = &v
+	return s
+}
+
+// SetCapacityReservationResourceGroupArn sets the CapacityReservationResourceGroupArn field's value.
+func (s *CapacityReservationTargetResponse) SetCapacityReservationResourceGroupArn(v string) *CapacityReservationTargetResponse {
+	s.CapacityReservationResourceGroupArn = &v
+	return s
+}
+
+// Describes a carrier gateway.
+type CarrierGateway struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the carrier gateway.
+	CarrierGatewayId *string `locationName:"carrierGatewayId" type:"string"`
+
+	// The AWS account ID of the owner of the carrier gateway.
+	OwnerId *string `locationName:"ownerId" type:"string"`
+
+	// The state of the carrier gateway.
+	State *string `locationName:"state" type:"string" enum:"CarrierGatewayState"`
+
+	// The tags assigned to the carrier gateway.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC associated with the carrier gateway.
+	VpcId *string `locationName:"vpcId" type:"string"`
+}
+
+// String returns the string representation
+func (s CarrierGateway) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CarrierGateway) GoString() string {
+	return s.String()
+}
+
+// SetCarrierGatewayId sets the CarrierGatewayId field's value.
+func (s *CarrierGateway) SetCarrierGatewayId(v string) *CarrierGateway {
+	s.CarrierGatewayId = &v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *CarrierGateway) SetOwnerId(v string) *CarrierGateway {
+	s.OwnerId = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *CarrierGateway) SetState(v string) *CarrierGateway {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CarrierGateway) SetTags(v []*Tag) *CarrierGateway {
+	s.Tags = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CarrierGateway) SetVpcId(v string) *CarrierGateway {
+	s.VpcId = &v
 	return s
 }
 
@@ -44199,6 +44804,9 @@ type CoipPool struct {
 	// The ID of the local gateway route table.
 	LocalGatewayRouteTableId *string `locationName:"localGatewayRouteTableId" type:"string"`
 
+	// The ARN of the address pool.
+	PoolArn *string `locationName:"poolArn" min:"1" type:"string"`
+
 	// The address ranges of the address pool.
 	PoolCidrs []*string `locationName:"poolCidrSet" locationNameList:"item" type:"list"`
 
@@ -44222,6 +44830,12 @@ func (s CoipPool) GoString() string {
 // SetLocalGatewayRouteTableId sets the LocalGatewayRouteTableId field's value.
 func (s *CoipPool) SetLocalGatewayRouteTableId(v string) *CoipPool {
 	s.LocalGatewayRouteTableId = &v
+	return s
+}
+
+// SetPoolArn sets the PoolArn field's value.
+func (s *CoipPool) SetPoolArn(v string) *CoipPool {
+	s.PoolArn = &v
 	return s
 }
 
@@ -44345,7 +44959,8 @@ func (s *ConfirmProductInstanceOutput) SetReturn(v bool) *ConfirmProductInstance
 type ConnectionLogOptions struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the CloudWatch Logs log group.
+	// The name of the CloudWatch Logs log group. Required if connection logging
+	// is enabled.
 	CloudwatchLogGroup *string `type:"string"`
 
 	// The name of the CloudWatch Logs log stream to which the connection data is
@@ -45146,8 +45761,6 @@ type CreateCapacityReservationInput struct {
 
 	// Unique, case-sensitive identifier that you provide to ensure the idempotency
 	// of the request. For more information, see How to Ensure Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Run_Instance_Idempotency.html).
-	//
-	// Constraint: Maximum 64 ASCII characters.
 	ClientToken *string `type:"string"`
 
 	// Checks whether you have the required permissions for the action, without
@@ -45372,6 +45985,98 @@ func (s CreateCapacityReservationOutput) GoString() string {
 // SetCapacityReservation sets the CapacityReservation field's value.
 func (s *CreateCapacityReservationOutput) SetCapacityReservation(v *CapacityReservation) *CreateCapacityReservationOutput {
 	s.CapacityReservation = v
+	return s
+}
+
+type CreateCarrierGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request. For more information, see How to Ensure Idempotency (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Run_Instance_Idempotency.html).
+	ClientToken *string `type:"string" idempotencyToken:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The tags to associate with the carrier gateway.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
+	// The ID of the VPC to associate with the carrier gateway.
+	//
+	// VpcId is a required field
+	VpcId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateCarrierGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateCarrierGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateCarrierGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateCarrierGatewayInput"}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateCarrierGatewayInput) SetClientToken(v string) *CreateCarrierGatewayInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *CreateCarrierGatewayInput) SetDryRun(v bool) *CreateCarrierGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateCarrierGatewayInput) SetTagSpecifications(v []*TagSpecification) *CreateCarrierGatewayInput {
+	s.TagSpecifications = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *CreateCarrierGatewayInput) SetVpcId(v string) *CreateCarrierGatewayInput {
+	s.VpcId = &v
+	return s
+}
+
+type CreateCarrierGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the carrier gateway.
+	CarrierGateway *CarrierGateway `locationName:"carrierGateway" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateCarrierGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateCarrierGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetCarrierGateway sets the CarrierGateway field's value.
+func (s *CreateCarrierGatewayOutput) SetCarrierGateway(v *CarrierGateway) *CreateCarrierGatewayOutput {
+	s.CarrierGateway = v
 	return s
 }
 
@@ -45783,6 +46488,9 @@ type CreateCustomerGatewayInput struct {
 	// The address must be static.
 	PublicIp *string `locationName:"IpAddress" type:"string"`
 
+	// The tags to apply to the customer gateway.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The type of VPN connection that this customer gateway supports (ipsec.1).
 	//
 	// Type is a required field
@@ -45842,6 +46550,12 @@ func (s *CreateCustomerGatewayInput) SetDryRun(v bool) *CreateCustomerGatewayInp
 // SetPublicIp sets the PublicIp field's value.
 func (s *CreateCustomerGatewayInput) SetPublicIp(v string) *CreateCustomerGatewayInput {
 	s.PublicIp = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateCustomerGatewayInput) SetTagSpecifications(v []*TagSpecification) *CreateCustomerGatewayInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -46010,6 +46724,9 @@ type CreateDhcpOptionsInput struct {
 	// the required permissions, the error response is DryRunOperation. Otherwise,
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The tags to assign to the DHCP option.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
@@ -46044,6 +46761,12 @@ func (s *CreateDhcpOptionsInput) SetDhcpConfigurations(v []*NewDhcpConfiguration
 // SetDryRun sets the DryRun field's value.
 func (s *CreateDhcpOptionsInput) SetDryRun(v bool) *CreateDhcpOptionsInput {
 	s.DryRun = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateDhcpOptionsInput) SetTagSpecifications(v []*TagSpecification) *CreateDhcpOptionsInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -46083,6 +46806,9 @@ type CreateEgressOnlyInternetGatewayInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
+	// The tags to assign to the egress-only internet gateway.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The ID of the VPC for which to create the egress-only internet gateway.
 	//
 	// VpcId is a required field
@@ -46121,6 +46847,12 @@ func (s *CreateEgressOnlyInternetGatewayInput) SetClientToken(v string) *CreateE
 // SetDryRun sets the DryRun field's value.
 func (s *CreateEgressOnlyInternetGatewayInput) SetDryRun(v bool) *CreateEgressOnlyInternetGatewayInput {
 	s.DryRun = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateEgressOnlyInternetGatewayInput) SetTagSpecifications(v []*TagSpecification) *CreateEgressOnlyInternetGatewayInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -47112,6 +47844,9 @@ type CreateInternetGatewayInput struct {
 	// the required permissions, the error response is DryRunOperation. Otherwise,
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
+
+	// The tags to assign to the internet gateway.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
@@ -47127,6 +47862,12 @@ func (s CreateInternetGatewayInput) GoString() string {
 // SetDryRun sets the DryRun field's value.
 func (s *CreateInternetGatewayInput) SetDryRun(v bool) *CreateInternetGatewayInput {
 	s.DryRun = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateInternetGatewayInput) SetTagSpecifications(v []*TagSpecification) *CreateInternetGatewayInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -48199,6 +48940,9 @@ type CreateNetworkAclInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
+	// The tags to assign to the network ACL.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The ID of the VPC.
 	//
 	// VpcId is a required field
@@ -48231,6 +48975,12 @@ func (s *CreateNetworkAclInput) Validate() error {
 // SetDryRun sets the DryRun field's value.
 func (s *CreateNetworkAclInput) SetDryRun(v bool) *CreateNetworkAclInput {
 	s.DryRun = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateNetworkAclInput) SetTagSpecifications(v []*TagSpecification) *CreateNetworkAclInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -48320,6 +49070,9 @@ type CreateNetworkInterfaceInput struct {
 	//
 	// SubnetId is a required field
 	SubnetId *string `locationName:"subnetId" type:"string" required:"true"`
+
+	// The tags to apply to the new network interface.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
@@ -48402,6 +49155,12 @@ func (s *CreateNetworkInterfaceInput) SetSecondaryPrivateIpAddressCount(v int64)
 // SetSubnetId sets the SubnetId field's value.
 func (s *CreateNetworkInterfaceInput) SetSubnetId(v string) *CreateNetworkInterfaceInput {
 	s.SubnetId = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateNetworkInterfaceInput) SetTagSpecifications(v []*TagSpecification) *CreateNetworkInterfaceInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -48738,6 +49497,12 @@ func (s *CreateReservedInstancesListingOutput) SetReservedInstancesListings(v []
 type CreateRouteInput struct {
 	_ struct{} `type:"structure"`
 
+	// The ID of the carrier gateway.
+	//
+	// You can only use this option when the VPC contains a subnet which is associated
+	// with a Wavelength Zone.
+	CarrierGatewayId *string `type:"string"`
+
 	// The IPv4 CIDR address block used for the destination match. Routing decisions
 	// are based on the most specific match. We modify the specified CIDR block
 	// to its canonical form; for example, if you specify 100.68.0.18/18, we modify
@@ -48810,6 +49575,12 @@ func (s *CreateRouteInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCarrierGatewayId sets the CarrierGatewayId field's value.
+func (s *CreateRouteInput) SetCarrierGatewayId(v string) *CreateRouteInput {
+	s.CarrierGatewayId = &v
+	return s
 }
 
 // SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
@@ -48922,6 +49693,9 @@ type CreateRouteTableInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
+	// The tags to assign to the route table.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The ID of the VPC.
 	//
 	// VpcId is a required field
@@ -48954,6 +49728,12 @@ func (s *CreateRouteTableInput) Validate() error {
 // SetDryRun sets the DryRun field's value.
 func (s *CreateRouteTableInput) SetDryRun(v bool) *CreateRouteTableInput {
 	s.DryRun = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateRouteTableInput) SetTagSpecifications(v []*TagSpecification) *CreateRouteTableInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -49017,6 +49797,9 @@ type CreateSecurityGroupInput struct {
 	// GroupName is a required field
 	GroupName *string `type:"string" required:"true"`
 
+	// The tags to assign to the security group.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// [EC2-VPC] The ID of the VPC. Required for EC2-VPC.
 	VpcId *string `type:"string"`
 }
@@ -49065,6 +49848,12 @@ func (s *CreateSecurityGroupInput) SetGroupName(v string) *CreateSecurityGroupIn
 	return s
 }
 
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateSecurityGroupInput) SetTagSpecifications(v []*TagSpecification) *CreateSecurityGroupInput {
+	s.TagSpecifications = v
+	return s
+}
+
 // SetVpcId sets the VpcId field's value.
 func (s *CreateSecurityGroupInput) SetVpcId(v string) *CreateSecurityGroupInput {
 	s.VpcId = &v
@@ -49076,6 +49865,9 @@ type CreateSecurityGroupOutput struct {
 
 	// The ID of the security group.
 	GroupId *string `locationName:"groupId" type:"string"`
+
+	// The tags assigned to the security group.
+	Tags []*Tag `locationName:"tagSet" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
@@ -49091,6 +49883,12 @@ func (s CreateSecurityGroupOutput) GoString() string {
 // SetGroupId sets the GroupId field's value.
 func (s *CreateSecurityGroupOutput) SetGroupId(v string) *CreateSecurityGroupOutput {
 	s.GroupId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateSecurityGroupOutput) SetTags(v []*Tag) *CreateSecurityGroupOutput {
+	s.Tags = v
 	return s
 }
 
@@ -49387,6 +50185,9 @@ type CreateSubnetInput struct {
 	// ARN, you must also specify the Availability Zone of the Outpost subnet.
 	OutpostArn *string `type:"string"`
 
+	// The tags to assign to the subnet.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The ID of the VPC.
 	//
 	// VpcId is a required field
@@ -49452,6 +50253,12 @@ func (s *CreateSubnetInput) SetIpv6CidrBlock(v string) *CreateSubnetInput {
 // SetOutpostArn sets the OutpostArn field's value.
 func (s *CreateSubnetInput) SetOutpostArn(v string) *CreateSubnetInput {
 	s.OutpostArn = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateSubnetInput) SetTagSpecifications(v []*TagSpecification) *CreateSubnetInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -51507,6 +52314,9 @@ type CreateVpcInput struct {
 
 	// The ID of an IPv6 address pool from which to allocate the IPv6 CIDR block.
 	Ipv6Pool *string `type:"string"`
+
+	// The tags to assign to the VPC.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
 }
 
 // String returns the string representation
@@ -51574,6 +52384,12 @@ func (s *CreateVpcInput) SetIpv6Pool(v string) *CreateVpcInput {
 	return s
 }
 
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateVpcInput) SetTagSpecifications(v []*TagSpecification) *CreateVpcInput {
+	s.TagSpecifications = v
+	return s
+}
+
 type CreateVpcOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -51621,6 +52437,9 @@ type CreateVpcPeeringConnectionInput struct {
 	// You must specify this parameter in the request.
 	PeerVpcId *string `locationName:"peerVpcId" type:"string"`
 
+	// The tags to assign to the peering connection.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The ID of the requester VPC. You must specify this parameter in the request.
 	VpcId *string `locationName:"vpcId" type:"string"`
 }
@@ -51656,6 +52475,12 @@ func (s *CreateVpcPeeringConnectionInput) SetPeerRegion(v string) *CreateVpcPeer
 // SetPeerVpcId sets the PeerVpcId field's value.
 func (s *CreateVpcPeeringConnectionInput) SetPeerVpcId(v string) *CreateVpcPeeringConnectionInput {
 	s.PeerVpcId = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateVpcPeeringConnectionInput) SetTagSpecifications(v []*TagSpecification) *CreateVpcPeeringConnectionInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -51705,6 +52530,9 @@ type CreateVpnConnectionInput struct {
 
 	// The options for the VPN connection.
 	Options *VpnConnectionOptionsSpecification `locationName:"options" type:"structure"`
+
+	// The tags to apply to the VPN connection.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
 
 	// The ID of the transit gateway. If you specify a transit gateway, you cannot
 	// specify a virtual private gateway.
@@ -51761,6 +52589,12 @@ func (s *CreateVpnConnectionInput) SetDryRun(v bool) *CreateVpnConnectionInput {
 // SetOptions sets the Options field's value.
 func (s *CreateVpnConnectionInput) SetOptions(v *VpnConnectionOptionsSpecification) *CreateVpnConnectionInput {
 	s.Options = v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateVpnConnectionInput) SetTagSpecifications(v []*TagSpecification) *CreateVpnConnectionInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -51893,6 +52727,9 @@ type CreateVpnGatewayInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
+	// The tags to apply to the virtual private gateway.
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The type of VPN connection this virtual private gateway supports.
 	//
 	// Type is a required field
@@ -51940,6 +52777,12 @@ func (s *CreateVpnGatewayInput) SetDryRun(v bool) *CreateVpnGatewayInput {
 	return s
 }
 
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *CreateVpnGatewayInput) SetTagSpecifications(v []*TagSpecification) *CreateVpnGatewayInput {
+	s.TagSpecifications = v
+	return s
+}
+
 // SetType sets the Type field's value.
 func (s *CreateVpnGatewayInput) SetType(v string) *CreateVpnGatewayInput {
 	s.Type = &v
@@ -51970,12 +52813,12 @@ func (s *CreateVpnGatewayOutput) SetVpnGateway(v *VpnGateway) *CreateVpnGatewayO
 	return s
 }
 
-// Describes the credit option for CPU usage of a T2 or T3 instance.
+// Describes the credit option for CPU usage of a T2, T3, or T3a instance.
 type CreditSpecification struct {
 	_ struct{} `type:"structure"`
 
-	// The credit option for CPU usage of a T2 or T3 instance. Valid values are
-	// standard and unlimited.
+	// The credit option for CPU usage of a T2, T3, or T3a instance. Valid values
+	// are standard and unlimited.
 	CpuCredits *string `locationName:"cpuCredits" type:"string"`
 }
 
@@ -51995,12 +52838,12 @@ func (s *CreditSpecification) SetCpuCredits(v string) *CreditSpecification {
 	return s
 }
 
-// The credit option for CPU usage of a T2 or T3 instance.
+// The credit option for CPU usage of a T2, T3, or T3a instance.
 type CreditSpecificationRequest struct {
 	_ struct{} `type:"structure"`
 
-	// The credit option for CPU usage of a T2 or T3 instance. Valid values are
-	// standard and unlimited.
+	// The credit option for CPU usage of a T2, T3, or T3a instance. Valid values
+	// are standard and unlimited.
 	//
 	// CpuCredits is a required field
 	CpuCredits *string `type:"string" required:"true"`
@@ -52121,6 +52964,79 @@ func (s *CustomerGateway) SetTags(v []*Tag) *CustomerGateway {
 // SetType sets the Type field's value.
 func (s *CustomerGateway) SetType(v string) *CustomerGateway {
 	s.Type = &v
+	return s
+}
+
+type DeleteCarrierGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the carrier gateway.
+	//
+	// CarrierGatewayId is a required field
+	CarrierGatewayId *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+}
+
+// String returns the string representation
+func (s DeleteCarrierGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteCarrierGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteCarrierGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteCarrierGatewayInput"}
+	if s.CarrierGatewayId == nil {
+		invalidParams.Add(request.NewErrParamRequired("CarrierGatewayId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCarrierGatewayId sets the CarrierGatewayId field's value.
+func (s *DeleteCarrierGatewayInput) SetCarrierGatewayId(v string) *DeleteCarrierGatewayInput {
+	s.CarrierGatewayId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DeleteCarrierGatewayInput) SetDryRun(v bool) *DeleteCarrierGatewayInput {
+	s.DryRun = &v
+	return s
+}
+
+type DeleteCarrierGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the carrier gateway.
+	CarrierGateway *CarrierGateway `locationName:"carrierGateway" type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteCarrierGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteCarrierGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetCarrierGateway sets the CarrierGateway field's value.
+func (s *DeleteCarrierGatewayOutput) SetCarrierGateway(v *CarrierGateway) *DeleteCarrierGatewayOutput {
+	s.CarrierGateway = v
 	return s
 }
 
@@ -56344,7 +57260,8 @@ type DescribeAddressesInput struct {
 	//    * instance-id - The ID of the instance the address is associated with,
 	//    if any.
 	//
-	//    * network-border-group - The location from where the IP address is advertised.
+	//    * network-border-group - A unique set of Availability Zones, Local Zones,
+	//    or Wavelength Zones from where AWS advertises IP addresses.
 	//
 	//    * network-interface-id - [EC2-VPC] The ID of the network interface that
 	//    the address is associated with, if any.
@@ -56354,7 +57271,7 @@ type DescribeAddressesInput struct {
 	//    * private-ip-address - [EC2-VPC] The private IP address associated with
 	//    the Elastic IP address.
 	//
-	//    * public-ip - The Elastic IP address.
+	//    * public-ip - The Elastic IP address, or the carrier IP address.
 	//
 	//    * tag:<key> - The key/value combination of a tag assigned to the resource.
 	//    Use the tag key in the filter name and the tag value as the filter value.
@@ -56493,8 +57410,8 @@ func (s *DescribeAggregateIdFormatOutput) SetUseLongIdsAggregated(v bool) *Descr
 type DescribeAvailabilityZonesInput struct {
 	_ struct{} `type:"structure"`
 
-	// Include all Availability Zones and Local Zones regardless of your opt in
-	// status.
+	// Include all Availability Zones, Local Zones, and Wavelength Zones regardless
+	// of your opt-in status.
 	//
 	// If you do not use this parameter, the results include only the zones for
 	// the Regions where you have chosen the option to opt in.
@@ -56510,29 +57427,41 @@ type DescribeAvailabilityZonesInput struct {
 	//
 	//    * group-name - For Availability Zones, use the Region name. For Local
 	//    Zones, use the name of the group associated with the Local Zone (for example,
-	//    us-west-2-lax-1).
+	//    us-west-2-lax-1) For Wavelength Zones, use the name of the group associated
+	//    with the Wavelength Zone (for example, us-east-1-wl1-bos-wlz-1).
 	//
-	//    * message - The Availability Zone or Local Zone message.
+	//    * message - The Zone message.
 	//
-	//    * opt-in-status - The opt in status (opted-in, and not-opted-in | opt-in-not-required).
+	//    * opt-in-status - The opt-in status (opted-in, and not-opted-in | opt-in-not-required).
 	//
-	//    * region-name - The name of the Region for the Availability Zone or Local
-	//    Zone (for example, us-east-1).
+	//    * parent-zoneID - The ID of the zone that handles some of the Local Zone
+	//    and Wavelength Zone control plane operations, such as API calls.
 	//
-	//    * state - The state of the Availability Zone or Local Zone (available
-	//    | information | impaired | unavailable).
+	//    * parent-zoneName - The ID of the zone that handles some of the Local
+	//    Zone and Wavelength Zone control plane operations, such as API calls.
 	//
-	//    * zone-id - The ID of the Availability Zone (for example, use1-az1) or
-	//    the Local Zone (for example, use usw2-lax1-az1).
+	//    * region-name - The name of the Region for the Zone (for example, us-east-1).
 	//
-	//    * zone-name - The name of the Availability Zone (for example, us-east-1a)
-	//    or the Local Zone (for example, use us-west-2-lax-1a).
+	//    * state - The state of the Availability Zone, the Local Zone, or the Wavelength
+	//    Zone (available | information | impaired | unavailable).
+	//
+	//    * zone-id - The ID of the Availability Zone (for example, use1-az1), the
+	//    Local Zone (for example, usw2-lax1-az1), or the Wavelength Zone (for example,
+	//    us-east-1-wl1-bos-wlz-1).
+	//
+	//    * zone-type - The type of zone, for example, local-zone.
+	//
+	//    * zone-name - The name of the Availability Zone (for example, us-east-1a),
+	//    the Local Zone (for example, us-west-2-lax-1a), or the Wavelength Zone
+	//    (for example, us-east-1-wl1-bos-wlz-1).
+	//
+	//    * zone-type - The type of zone, for example, local-zone.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The IDs of the Availability Zones and Local Zones.
+	// The IDs of the Availability Zones, Local Zones, and Wavelength Zones.
 	ZoneIds []*string `locationName:"ZoneId" locationNameList:"ZoneId" type:"list"`
 
-	// The names of the Availability Zones and Local Zones.
+	// The names of the Availability Zones, Local Zones, and Wavelength Zones.
 	ZoneNames []*string `locationName:"ZoneName" locationNameList:"ZoneName" type:"list"`
 }
 
@@ -56579,7 +57508,7 @@ func (s *DescribeAvailabilityZonesInput) SetZoneNames(v []*string) *DescribeAvai
 type DescribeAvailabilityZonesOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Information about the Availability Zones and Local Zones.
+	// Information about the Availability Zones, Local Zones, and Wavelength Zones.
 	AvailabilityZones []*AvailabilityZone `locationName:"availabilityZoneInfo" locationNameList:"item" type:"list"`
 }
 
@@ -56854,10 +57783,11 @@ type DescribeCapacityReservationsInput struct {
 
 	// The maximum number of results to return for the request in a single page.
 	// The remaining results can be seen by sending another request with the returned
-	// nextToken value.
+	// nextToken value. This value can be between 5 and 500. If maxResults is given
+	// a larger value than 500, you receive an error.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token to retrieve the next page of results.
+	// The token to use to retrieve the next page of results.
 	NextToken *string `type:"string"`
 }
 
@@ -56943,6 +57873,134 @@ func (s *DescribeCapacityReservationsOutput) SetCapacityReservations(v []*Capaci
 
 // SetNextToken sets the NextToken field's value.
 func (s *DescribeCapacityReservationsOutput) SetNextToken(v string) *DescribeCapacityReservationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeCarrierGatewaysInput struct {
+	_ struct{} `type:"structure"`
+
+	// One or more carrier gateway IDs.
+	CarrierGatewayIds []*string `locationName:"CarrierGatewayId" type:"list"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// One or more filters.
+	//
+	//    * carrier-gateway-id - The ID of the carrier gateway.
+	//
+	//    * state - The state of the carrier gateway (pending | failed | available
+	//    | deleting | deleted).
+	//
+	//    * owner-id - The AWS account ID of the owner of the carrier gateway.
+	//
+	//    * tag:<key> - The key/value combination of a tag assigned to the resource.
+	//    Use the tag key in the filter name and the tag value as the filter value.
+	//    For example, to find all resources that have a tag with the key Owner
+	//    and the value TeamA, specify tag:Owner for the filter name and TeamA for
+	//    the filter value.
+	//
+	//    * tag-key - The key of a tag assigned to the resource. Use this filter
+	//    to find all resources assigned a tag with a specific key, regardless of
+	//    the tag value.
+	//
+	//    * vpc-id - The ID of the VPC associated with the carrier gateway.
+	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
+
+	// The maximum number of results to return with a single call. To retrieve the
+	// remaining results, make another call with the returned nextToken value.
+	MaxResults *int64 `min:"5" type:"integer"`
+
+	// The token for the next page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeCarrierGatewaysInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeCarrierGatewaysInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeCarrierGatewaysInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeCarrierGatewaysInput"}
+	if s.MaxResults != nil && *s.MaxResults < 5 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCarrierGatewayIds sets the CarrierGatewayIds field's value.
+func (s *DescribeCarrierGatewaysInput) SetCarrierGatewayIds(v []*string) *DescribeCarrierGatewaysInput {
+	s.CarrierGatewayIds = v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *DescribeCarrierGatewaysInput) SetDryRun(v bool) *DescribeCarrierGatewaysInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeCarrierGatewaysInput) SetFilters(v []*Filter) *DescribeCarrierGatewaysInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeCarrierGatewaysInput) SetMaxResults(v int64) *DescribeCarrierGatewaysInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeCarrierGatewaysInput) SetNextToken(v string) *DescribeCarrierGatewaysInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeCarrierGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the carrier gateway.
+	CarrierGateways []*CarrierGateway `locationName:"carrierGatewaySet" locationNameList:"item" type:"list"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeCarrierGatewaysOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeCarrierGatewaysOutput) GoString() string {
+	return s.String()
+}
+
+// SetCarrierGateways sets the CarrierGateways field's value.
+func (s *DescribeCarrierGatewaysOutput) SetCarrierGateways(v []*CarrierGateway) *DescribeCarrierGatewaysOutput {
+	s.CarrierGateways = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeCarrierGatewaysOutput) SetNextToken(v string) *DescribeCarrierGatewaysOutput {
 	s.NextToken = &v
 	return s
 }
@@ -60363,11 +61421,13 @@ type DescribeImagesInput struct {
 	//
 	//    * name - The name of the AMI (provided during image creation).
 	//
-	//    * owner-alias - String value from an Amazon-maintained list (amazon |
-	//    aws-marketplace | microsoft) of snapshot owners. Not to be confused with
-	//    the user-configured AWS account alias, which is set from the IAM console.
+	//    * owner-alias - The owner alias, from an Amazon-maintained list (amazon
+	//    | aws-marketplace). This is not the user-configured AWS account alias
+	//    set using the IAM console. We recommend that you use the related parameter
+	//    instead of this filter.
 	//
-	//    * owner-id - The AWS account ID of the image owner.
+	//    * owner-id - The AWS account ID of the owner. We recommend that you use
+	//    the related parameter instead of this filter.
 	//
 	//    * platform - The platform. To only list Windows-based AMIs, use windows.
 	//
@@ -60409,10 +61469,10 @@ type DescribeImagesInput struct {
 	// Default: Describes all images available to you.
 	ImageIds []*string `locationName:"ImageId" locationNameList:"ImageId" type:"list"`
 
-	// Filters the images by the owner. Specify an AWS account ID, self (owner is
-	// the sender of the request), or an AWS owner alias (valid values are amazon
-	// | aws-marketplace | microsoft). Omitting this option returns all images for
-	// which you have launch permissions, regardless of ownership.
+	// Scopes the results to images with the specified owners. You can specify a
+	// combination of AWS account IDs, self, amazon, and aws-marketplace. If you
+	// omit this parameter, the results include all images for which you have launch
+	// permissions, regardless of ownership.
 	Owners []*string `locationName:"Owner" locationNameList:"Owner" type:"list"`
 }
 
@@ -62256,12 +63316,16 @@ type DescribeLaunchTemplateVersionsInput struct {
 	//    * ram-disk-id - The RAM disk ID.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
-	// The ID of the launch template. You must specify either the launch template
-	// ID or launch template name in the request.
+	// The ID of the launch template. To describe one or more versions of a specified
+	// launch template, you must specify either the launch template ID or the launch
+	// template name in the request. To describe all the latest or default launch
+	// template versions in your account, you must omit this parameter.
 	LaunchTemplateId *string `type:"string"`
 
-	// The name of the launch template. You must specify either the launch template
-	// ID or launch template name in the request.
+	// The name of the launch template. To describe one or more versions of a specified
+	// launch template, you must specify either the launch template ID or the launch
+	// template name in the request. To describe all the latest or default launch
+	// template versions in your account, you must omit this parameter.
 	LaunchTemplateName *string `min:"3" type:"string"`
 
 	// The maximum number of results to return in a single call. To retrieve the
@@ -62278,7 +63342,18 @@ type DescribeLaunchTemplateVersionsInput struct {
 	// The token to request the next page of results.
 	NextToken *string `type:"string"`
 
-	// One or more versions of the launch template.
+	// One or more versions of the launch template. Valid values depend on whether
+	// you are describing a specified launch template (by ID or name) or all launch
+	// templates in your account.
+	//
+	// To describe one or more versions of a specified launch template, valid values
+	// are $Latest, $Default, and numbers.
+	//
+	// To describe all launch templates in your account that are defined as the
+	// latest version, the valid value is $Latest. To describe all launch templates
+	// in your account that are defined as the default version, the valid value
+	// is $Default. You can specify $Latest and $Default in the same call. You cannot
+	// specify numbers.
 	Versions []*string `locationName:"LaunchTemplateVersion" locationNameList:"item" type:"list"`
 }
 
@@ -65324,8 +66399,6 @@ type DescribeRouteTablesInput struct {
 	//    to find all resources assigned a tag with a specific key, regardless of
 	//    the tag value.
 	//
-	//    * transit-gateway-id - The ID of a transit gateway.
-	//
 	//    * vpc-id - The ID of the VPC for the route table.
 	Filters []*Filter `locationName:"Filter" locationNameList:"Filter" type:"list"`
 
@@ -66770,7 +67843,7 @@ type DescribeSpotInstanceRequestsInput struct {
 	//    * state - The state of the Spot Instance request (open | active | closed
 	//    | cancelled | failed). Spot request status information can help you track
 	//    your Amazon EC2 Spot Instance requests. For more information, see Spot
-	//    Request Status (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-bid-status.html)
+	//    request status (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-bid-status.html)
 	//    in the Amazon EC2 User Guide for Linux Instances.
 	//
 	//    * status-code - The short code describing the most recent evaluation of
@@ -72690,7 +73763,7 @@ type EbsBlockDevice struct {
 	// bursting. For more information, see Amazon EBS volume types (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
 	// in the Amazon Elastic Compute Cloud User Guide.
 	//
-	// Constraints: Range is 100-16,000 IOPS for gp2 volumes and 100 to 64,000IOPS
+	// Constraints: Range is 100-16,000 IOPS for gp2 volumes and 100 to 64,000 IOPS
 	// for io1 volumes in most Regions. Maximum io1 IOPS of 64,000 is guaranteed
 	// only on Nitro-based instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html#ec2-nitro-instances).
 	// Other instance families guarantee performance up to 32,000 IOPS. For more
@@ -76440,12 +77513,13 @@ type GetCapacityReservationUsageInput struct {
 
 	// The maximum number of results to return for the request in a single page.
 	// The remaining results can be seen by sending another request with the returned
-	// nextToken value.
+	// nextToken value. This value can be between 5 and 500. If maxResults is given
+	// a larger value than 500, you receive an error.
 	//
 	// Valid range: Minimum value of 1. Maximum value of 1000.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token to retrieve the next page of results.
+	// The token to use to retrieve the next page of results.
 	NextToken *string `type:"string"`
 }
 
@@ -77089,6 +78163,114 @@ func (s GetEbsEncryptionByDefaultOutput) GoString() string {
 // SetEbsEncryptionByDefault sets the EbsEncryptionByDefault field's value.
 func (s *GetEbsEncryptionByDefaultOutput) SetEbsEncryptionByDefault(v bool) *GetEbsEncryptionByDefaultOutput {
 	s.EbsEncryptionByDefault = &v
+	return s
+}
+
+type GetGroupsForCapacityReservationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Capacity Reservation.
+	//
+	// CapacityReservationId is a required field
+	CapacityReservationId *string `type:"string" required:"true"`
+
+	// Checks whether you have the required permissions for the action, without
+	// actually making the request, and provides an error response. If you have
+	// the required permissions, the error response is DryRunOperation. Otherwise,
+	// it is UnauthorizedOperation.
+	DryRun *bool `type:"boolean"`
+
+	// The maximum number of results to return for the request in a single page.
+	// The remaining results can be seen by sending another request with the returned
+	// nextToken value. This value can be between 5 and 500. If maxResults is given
+	// a larger value than 500, you receive an error.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// The token to use to retrieve the next page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s GetGroupsForCapacityReservationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetGroupsForCapacityReservationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetGroupsForCapacityReservationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetGroupsForCapacityReservationInput"}
+	if s.CapacityReservationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("CapacityReservationId"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCapacityReservationId sets the CapacityReservationId field's value.
+func (s *GetGroupsForCapacityReservationInput) SetCapacityReservationId(v string) *GetGroupsForCapacityReservationInput {
+	s.CapacityReservationId = &v
+	return s
+}
+
+// SetDryRun sets the DryRun field's value.
+func (s *GetGroupsForCapacityReservationInput) SetDryRun(v bool) *GetGroupsForCapacityReservationInput {
+	s.DryRun = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *GetGroupsForCapacityReservationInput) SetMaxResults(v int64) *GetGroupsForCapacityReservationInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetGroupsForCapacityReservationInput) SetNextToken(v string) *GetGroupsForCapacityReservationInput {
+	s.NextToken = &v
+	return s
+}
+
+type GetGroupsForCapacityReservationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the resource groups to which the Capacity Reservation has
+	// been added.
+	CapacityReservationGroups []*CapacityReservationGroup `locationName:"capacityReservationGroupSet" locationNameList:"item" type:"list"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation
+func (s GetGroupsForCapacityReservationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s GetGroupsForCapacityReservationOutput) GoString() string {
+	return s.String()
+}
+
+// SetCapacityReservationGroups sets the CapacityReservationGroups field's value.
+func (s *GetGroupsForCapacityReservationOutput) SetCapacityReservationGroups(v []*CapacityReservationGroup) *GetGroupsForCapacityReservationOutput {
+	s.CapacityReservationGroups = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetGroupsForCapacityReservationOutput) SetNextToken(v string) *GetGroupsForCapacityReservationOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -81317,7 +82499,11 @@ type Instance struct {
 	// name is only available if you've enabled DNS hostnames for your VPC.
 	PublicDnsName *string `locationName:"dnsName" type:"string"`
 
-	// The public IPv4 address assigned to the instance, if applicable.
+	// The public IPv4 address, or the Carrier IP address assigned to the instance,
+	// if applicable.
+	//
+	// A Carrier IP address only applies to an instance launched in a subnet associated
+	// with a Wavelength Zone.
 	PublicIpAddress *string `locationName:"ipAddress" type:"string"`
 
 	// The RAM disk associated with this instance, if applicable.
@@ -82382,6 +83568,9 @@ func (s *InstanceNetworkInterface) SetVpcId(v string) *InstanceNetworkInterface 
 type InstanceNetworkInterfaceAssociation struct {
 	_ struct{} `type:"structure"`
 
+	// The carrier IP address associated with the network interface.
+	CarrierIp *string `locationName:"carrierIp" type:"string"`
+
 	// The ID of the owner of the Elastic IP address.
 	IpOwnerId *string `locationName:"ipOwnerId" type:"string"`
 
@@ -82400,6 +83589,12 @@ func (s InstanceNetworkInterfaceAssociation) String() string {
 // GoString returns the string representation
 func (s InstanceNetworkInterfaceAssociation) GoString() string {
 	return s.String()
+}
+
+// SetCarrierIp sets the CarrierIp field's value.
+func (s *InstanceNetworkInterfaceAssociation) SetCarrierIp(v string) *InstanceNetworkInterfaceAssociation {
+	s.CarrierIp = &v
+	return s
 }
 
 // SetIpOwnerId sets the IpOwnerId field's value.
@@ -82483,6 +83678,13 @@ func (s *InstanceNetworkInterfaceAttachment) SetStatus(v string) *InstanceNetwor
 // Describes a network interface.
 type InstanceNetworkInterfaceSpecification struct {
 	_ struct{} `type:"structure"`
+
+	// Indicates whether to assign a carrier IP address to the network interface.
+	//
+	// You can only assign a carrier IP address to a network interface that is in
+	// a subnet in a Wavelength Zone. For more information about carrier IP addresses,
+	// see Carrier IP addresses in the AWS Wavelength Developer Guide.
+	AssociateCarrierIpAddress *bool `type:"boolean"`
 
 	// Indicates whether to assign a public IPv4 address to an instance you launch
 	// in a VPC. The public IP address can only be assigned to a network interface
@@ -82572,6 +83774,12 @@ func (s InstanceNetworkInterfaceSpecification) String() string {
 // GoString returns the string representation
 func (s InstanceNetworkInterfaceSpecification) GoString() string {
 	return s.String()
+}
+
+// SetAssociateCarrierIpAddress sets the AssociateCarrierIpAddress field's value.
+func (s *InstanceNetworkInterfaceSpecification) SetAssociateCarrierIpAddress(v bool) *InstanceNetworkInterfaceSpecification {
+	s.AssociateCarrierIpAddress = &v
+	return s
 }
 
 // SetAssociatePublicIpAddress sets the AssociatePublicIpAddress field's value.
@@ -84336,7 +85544,7 @@ func (s *LaunchTemplateBlockDeviceMappingRequest) SetVirtualName(v string) *Laun
 // to configure the instance to run in On-Demand capacity or to run in any open
 // Capacity Reservation that has matching attributes (instance type, platform,
 // Availability Zone). Use the CapacityReservationTarget parameter to explicitly
-// target a specific Capacity Reservation.
+// target a specific Capacity Reservation or a Capacity Reservation group.
 type LaunchTemplateCapacityReservationSpecificationRequest struct {
 	_ struct{} `type:"structure"`
 
@@ -84350,7 +85558,8 @@ type LaunchTemplateCapacityReservationSpecificationRequest struct {
 	//    one is available. The instance runs in On-Demand capacity.
 	CapacityReservationPreference *string `type:"string" enum:"CapacityReservationPreference"`
 
-	// Information about the target Capacity Reservation.
+	// Information about the target Capacity Reservation or Capacity Reservation
+	// group.
 	CapacityReservationTarget *CapacityReservationTarget `type:"structure"`
 }
 
@@ -84390,7 +85599,8 @@ type LaunchTemplateCapacityReservationSpecificationResponse struct {
 	//    one is available. The instance runs in On-Demand capacity.
 	CapacityReservationPreference *string `locationName:"capacityReservationPreference" type:"string" enum:"CapacityReservationPreference"`
 
-	// Information about the target Capacity Reservation.
+	// Information about the target Capacity Reservation or Capacity Reservation
+	// group.
 	CapacityReservationTarget *CapacityReservationTargetResponse `locationName:"capacityReservationTarget" type:"structure"`
 }
 
@@ -85126,6 +86336,15 @@ func (s *LaunchTemplateInstanceMetadataOptionsRequest) SetHttpTokens(v string) *
 type LaunchTemplateInstanceNetworkInterfaceSpecification struct {
 	_ struct{} `type:"structure"`
 
+	// Indicates whether to associate a Carrier IP address with eth0 for a new network
+	// interface.
+	//
+	// Use this option when you launch an instance in a Wavelength Zone and want
+	// to associate a Carrier IP address with the network interface. For more information
+	// about Carrier IP addresses, see Carrier IP addresses (https://docs.aws.amazon.com/wavelength/latest/developerguide/how-wavelengths-work.html#provider-owned-ip)
+	// in the AWS Wavelength Developer Guide.
+	AssociateCarrierIpAddress *bool `locationName:"associateCarrierIpAddress" type:"boolean"`
+
 	// Indicates whether to associate a public IPv4 address with eth0 for a new
 	// network interface.
 	AssociatePublicIpAddress *bool `locationName:"associatePublicIpAddress" type:"boolean"`
@@ -85175,6 +86394,12 @@ func (s LaunchTemplateInstanceNetworkInterfaceSpecification) String() string {
 // GoString returns the string representation
 func (s LaunchTemplateInstanceNetworkInterfaceSpecification) GoString() string {
 	return s.String()
+}
+
+// SetAssociateCarrierIpAddress sets the AssociateCarrierIpAddress field's value.
+func (s *LaunchTemplateInstanceNetworkInterfaceSpecification) SetAssociateCarrierIpAddress(v bool) *LaunchTemplateInstanceNetworkInterfaceSpecification {
+	s.AssociateCarrierIpAddress = &v
+	return s
 }
 
 // SetAssociatePublicIpAddress sets the AssociatePublicIpAddress field's value.
@@ -85259,6 +86484,14 @@ func (s *LaunchTemplateInstanceNetworkInterfaceSpecification) SetSubnetId(v stri
 type LaunchTemplateInstanceNetworkInterfaceSpecificationRequest struct {
 	_ struct{} `type:"structure"`
 
+	// Associates a Carrier IP address with eth0 for a new network interface.
+	//
+	// Use this option when you launch an instance in a Wavelength Zone and want
+	// to associate a Carrier IP address with the network interface. For more information
+	// about Carrier IP addresses, see Carrier IP addresses (https://docs.aws.amazon.com/wavelength/latest/developerguide/how-wavelengths-work.html#provider-owned-ip)
+	// in the AWS Wavelength Developer Guide.
+	AssociateCarrierIpAddress *bool `type:"boolean"`
+
 	// Associates a public IPv4 address with eth0 for a new network interface.
 	AssociatePublicIpAddress *bool `type:"boolean"`
 
@@ -85316,6 +86549,12 @@ func (s LaunchTemplateInstanceNetworkInterfaceSpecificationRequest) String() str
 // GoString returns the string representation
 func (s LaunchTemplateInstanceNetworkInterfaceSpecificationRequest) GoString() string {
 	return s.String()
+}
+
+// SetAssociateCarrierIpAddress sets the AssociateCarrierIpAddress field's value.
+func (s *LaunchTemplateInstanceNetworkInterfaceSpecificationRequest) SetAssociateCarrierIpAddress(v bool) *LaunchTemplateInstanceNetworkInterfaceSpecificationRequest {
+	s.AssociateCarrierIpAddress = &v
+	return s
 }
 
 // SetAssociatePublicIpAddress sets the AssociatePublicIpAddress field's value.
@@ -86876,14 +88115,16 @@ type ModifyAvailabilityZoneGroupInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `type:"boolean"`
 
-	// The name of the Availability Zone Group.
+	// The name of the Availability Zone group, Local Zone group, or Wavelength
+	// Zone group.
 	//
 	// GroupName is a required field
 	GroupName *string `type:"string" required:"true"`
 
-	// Indicates whether to enable or disable membership. The valid values are opted-in.
-	// You must contact AWS Support (https://console.aws.amazon.com/support/home#/case/create%3FissueType=customer-service%26serviceCode=general-info%26getting-started%26categoryCode=using-aws%26services)
-	// to disable an Availability Zone group.
+	// Indicates whether you are opted in to the Local Zone group or Wavelength
+	// Zone group. The only valid value is opted-in. You must contact AWS Support
+	// (https://console.aws.amazon.com/support/home#/case/create%3FissueType=customer-service%26serviceCode=general-info%26getting-started%26categoryCode=using-aws%26services)
+	// to opt out of a Local Zone group, or Wavelength Zone group.
 	//
 	// OptInStatus is a required field
 	OptInStatus *string `type:"string" required:"true" enum:"ModifyAvailabilityZoneOptInStatus"`
@@ -92480,7 +93721,9 @@ func (s *NetworkInterface) SetVpcId(v string) *NetworkInterface {
 	return s
 }
 
-// Describes association information for an Elastic IP address (IPv4 only).
+// Describes association information for an Elastic IP address (IPv4 only),
+// or a Carrier IP address (for a network interface which resides in a subnet
+// in a Wavelength Zone).
 type NetworkInterfaceAssociation struct {
 	_ struct{} `type:"structure"`
 
@@ -92490,13 +93733,20 @@ type NetworkInterfaceAssociation struct {
 	// The association ID.
 	AssociationId *string `locationName:"associationId" type:"string"`
 
+	// The carrier IP address associated with the network interface.
+	//
+	// This option is only available when the network interface is in a subnet which
+	// is associated with a Wavelength Zone.
+	CarrierIp *string `locationName:"carrierIp" type:"string"`
+
 	// The ID of the Elastic IP address owner.
 	IpOwnerId *string `locationName:"ipOwnerId" type:"string"`
 
 	// The public DNS name.
 	PublicDnsName *string `locationName:"publicDnsName" type:"string"`
 
-	// The address of the Elastic IP address bound to the network interface.
+	// The address of the Elastic IP address or Carrier IP address bound to the
+	// network interface.
 	PublicIp *string `locationName:"publicIp" type:"string"`
 }
 
@@ -92519,6 +93769,12 @@ func (s *NetworkInterfaceAssociation) SetAllocationId(v string) *NetworkInterfac
 // SetAssociationId sets the AssociationId field's value.
 func (s *NetworkInterfaceAssociation) SetAssociationId(v string) *NetworkInterfaceAssociation {
 	s.AssociationId = &v
+	return s
+}
+
+// SetCarrierIp sets the CarrierIp field's value.
+func (s *NetworkInterfaceAssociation) SetCarrierIp(v string) *NetworkInterfaceAssociation {
+	s.CarrierIp = &v
 	return s
 }
 
@@ -96049,7 +97305,8 @@ type ReleaseAddressInput struct {
 	// it is UnauthorizedOperation.
 	DryRun *bool `locationName:"dryRun" type:"boolean"`
 
-	// The location that the IP address is released from.
+	// The set of Availability Zones, Local Zones, or Wavelength Zones from which
+	// AWS advertises IP addresses.
 	//
 	// If you provide an incorrect network border group, you will receive an InvalidAddress.NotFound
 	// error. For more information, see Error Codes (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html).
@@ -96553,6 +97810,9 @@ func (s ReplaceNetworkAclEntryOutput) GoString() string {
 type ReplaceRouteInput struct {
 	_ struct{} `type:"structure"`
 
+	// [IPv4 traffic only] The ID of a carrier gateway.
+	CarrierGatewayId *string `type:"string"`
+
 	// The IPv4 CIDR address block used for the destination match. The value that
 	// you provide must match the CIDR of an existing route in the table.
 	DestinationCidrBlock *string `locationName:"destinationCidrBlock" type:"string"`
@@ -96624,6 +97884,12 @@ func (s *ReplaceRouteInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCarrierGatewayId sets the CarrierGatewayId field's value.
+func (s *ReplaceRouteInput) SetCarrierGatewayId(v string) *ReplaceRouteInput {
+	s.CarrierGatewayId = &v
+	return s
 }
 
 // SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
@@ -97084,8 +98350,8 @@ type RequestLaunchTemplateData struct {
 	// in the Amazon Elastic Compute Cloud User Guide.
 	CpuOptions *LaunchTemplateCpuOptionsRequest `type:"structure"`
 
-	// The credit option for CPU usage of the instance. Valid for T2 or T3 instances
-	// only.
+	// The credit option for CPU usage of the instance. Valid for T2, T3, or T3a
+	// instances only.
 	CreditSpecification *CreditSpecificationRequest `type:"structure"`
 
 	// If you set this parameter to true, you can't terminate the instance using
@@ -97547,6 +98813,12 @@ type RequestSpotInstancesInput struct {
 	// The default is the On-Demand price.
 	SpotPrice *string `locationName:"spotPrice" type:"string"`
 
+	// The key-value pair for tagging the Spot Instance request on creation. The
+	// value for ResourceType must be spot-instances-request, otherwise the Spot
+	// Instance request fails. To tag the Spot Instance request after it has been
+	// created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
+	TagSpecifications []*TagSpecification `locationName:"TagSpecification" locationNameList:"item" type:"list"`
+
 	// The Spot Instance request type.
 	//
 	// Default: one-time
@@ -97647,6 +98919,12 @@ func (s *RequestSpotInstancesInput) SetLaunchSpecification(v *RequestSpotLaunchS
 // SetSpotPrice sets the SpotPrice field's value.
 func (s *RequestSpotInstancesInput) SetSpotPrice(v string) *RequestSpotInstancesInput {
 	s.SpotPrice = &v
+	return s
+}
+
+// SetTagSpecifications sets the TagSpecifications field's value.
+func (s *RequestSpotInstancesInput) SetTagSpecifications(v []*TagSpecification) *RequestSpotInstancesInput {
+	s.TagSpecifications = v
 	return s
 }
 
@@ -100018,6 +101296,9 @@ func (s RevokeSecurityGroupIngressOutput) GoString() string {
 type Route struct {
 	_ struct{} `type:"structure"`
 
+	// The ID of the carrier gateway.
+	CarrierGatewayId *string `locationName:"carrierGatewayId" type:"string"`
+
 	// The IPv4 CIDR block used for the destination match.
 	DestinationCidrBlock *string `locationName:"destinationCidrBlock" type:"string"`
 
@@ -100078,6 +101359,12 @@ func (s Route) String() string {
 // GoString returns the string representation
 func (s Route) GoString() string {
 	return s.String()
+}
+
+// SetCarrierGatewayId sets the CarrierGatewayId field's value.
+func (s *Route) SetCarrierGatewayId(v string) *Route {
+	s.CarrierGatewayId = &v
+	return s
 }
 
 // SetDestinationCidrBlock sets the DestinationCidrBlock field's value.
@@ -104003,7 +105290,7 @@ type SpotFleetRequestConfigData struct {
 
 	// The Amazon Resource Name (ARN) of an AWS Identity and Access Management (IAM)
 	// role that grants the Spot Fleet the permission to request, launch, terminate,
-	// and tag instances on your behalf. For more information, see Spot Fleet Prerequisites
+	// and tag instances on your behalf. For more information, see Spot Fleet prerequisites
 	// (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-fleet-requests.html#spot-fleet-prerequisites)
 	// in the Amazon EC2 User Guide for Linux Instances. Spot Fleet can terminate
 	// Spot Instances on your behalf when you cancel its Spot Fleet request using
@@ -104395,7 +105682,7 @@ type SpotInstanceRequest struct {
 	SpotPrice *string `locationName:"spotPrice" type:"string"`
 
 	// The state of the Spot Instance request. Spot status information helps track
-	// your Spot Instance requests. For more information, see Spot Status (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-bid-status.html)
+	// your Spot Instance requests. For more information, see Spot status (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-bid-status.html)
 	// in the Amazon EC2 User Guide for Linux Instances.
 	State *string `locationName:"state" type:"string" enum:"SpotInstanceState"`
 
@@ -104581,7 +105868,7 @@ func (s *SpotInstanceStateFault) SetMessage(v string) *SpotInstanceStateFault {
 type SpotInstanceStatus struct {
 	_ struct{} `type:"structure"`
 
-	// The status code. For a list of status codes, see Spot Status Codes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-bid-status.html#spot-instance-bid-status-understand)
+	// The status code. For a list of status codes, see Spot status codes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-bid-status.html#spot-instance-bid-status-understand)
 	// in the Amazon EC2 User Guide for Linux Instances.
 	Code *string `locationName:"code" type:"string"`
 
@@ -105941,13 +107228,17 @@ type TagSpecification struct {
 	_ struct{} `type:"structure"`
 
 	// The type of resource to tag. Currently, the resource types that support tagging
-	// on creation are: capacity-reservation | client-vpn-endpoint | dedicated-host
-	// | fleet | fpga-image | host-reservation | instance | ipv4pool-ec2 | ipv6pool-ec2
-	// | key-pair | launch-template | natgateway | spot-fleet-request | placement-group
-	// | prefix-list | snapshot | traffic-mirror-filter | traffic-mirror-session
-	// | traffic-mirror-target | transit-gateway | transit-gateway-attachment |
-	// transit-gateway-route-table | vpc-endpoint (for interface and gateway endpoints)
-	// | vpc-endpoint-service (for AWS PrivateLink) | volume | vpc-flow-log.
+	// on creation are: capacity-reservation | client-vpn-endpoint | customer-gateway
+	// | dedicated-host | dhcp-options | export-image-task | export-instance-task
+	// | fleet | fpga-image | host-reservation | import-image-task | import-snapshot-task
+	// | instance | internet-gateway | ipv4pool-ec2 | ipv6pool-ec2 | key-pair |
+	// launch-template | placement-group | prefix-list | natgateway | network-acl
+	// | route-table | security-group | spot-fleet-request | spot-instances-request
+	// | snapshot | subnet | traffic-mirror-filter | traffic-mirror-session | traffic-mirror-target
+	// | transit-gateway | transit-gateway-attachment | transit-gateway-route-table
+	// | volume |vpc | vpc-peering-connection | vpc-endpoint (for interface and
+	// gateway endpoints) | vpc-endpoint-service (for AWS PrivateLink) | vpc-flow-log
+	// | vpn-connection | vpn-gateway.
 	//
 	// To tag a resource after it has been created, see CreateTags (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateTags.html).
 	ResourceType *string `locationName:"resourceType" type:"string" enum:"ResourceType"`
@@ -108058,28 +109349,28 @@ type TransitGatewayRequestOptions struct {
 
 	// A private Autonomous System Number (ASN) for the Amazon side of a BGP session.
 	// The range is 64512 to 65534 for 16-bit ASNs and 4200000000 to 4294967294
-	// for 32-bit ASNs.
+	// for 32-bit ASNs. The default is 64512.
 	AmazonSideAsn *int64 `type:"long"`
 
-	// Enable or disable automatic acceptance of attachment requests. The default
-	// is disable.
+	// Enable or disable automatic acceptance of attachment requests. Disabled by
+	// default.
 	AutoAcceptSharedAttachments *string `type:"string" enum:"AutoAcceptSharedAttachmentsValue"`
 
 	// Enable or disable automatic association with the default association route
-	// table. The default is enable.
+	// table. Enabled by default.
 	DefaultRouteTableAssociation *string `type:"string" enum:"DefaultRouteTableAssociationValue"`
 
 	// Enable or disable automatic propagation of routes to the default propagation
-	// route table. The default is enable.
+	// route table. Enabled by default.
 	DefaultRouteTablePropagation *string `type:"string" enum:"DefaultRouteTablePropagationValue"`
 
-	// Enable or disable DNS support.
+	// Enable or disable DNS support. Enabled by default.
 	DnsSupport *string `type:"string" enum:"DnsSupportValue"`
 
 	// Indicates whether multicast is enabled on the transit gateway
 	MulticastSupport *string `type:"string" enum:"MulticastSupportValue"`
 
-	// Enable or disable Equal Cost Multipath Protocol support.
+	// Enable or disable Equal Cost Multipath Protocol support. Enabled by default.
 	VpnEcmpSupport *string `type:"string" enum:"VpnEcmpSupportValue"`
 }
 
@@ -110343,8 +111634,7 @@ type Vpc struct {
 	// Information about the IPv4 CIDR blocks associated with the VPC.
 	CidrBlockAssociationSet []*VpcCidrBlockAssociation `locationName:"cidrBlockAssociationSet" locationNameList:"item" type:"list"`
 
-	// The ID of the set of DHCP options you've associated with the VPC (or default
-	// if the default options are associated with the VPC).
+	// The ID of the set of DHCP options you've associated with the VPC.
 	DhcpOptionsId *string `locationName:"dhcpOptionsId" type:"string"`
 
 	// The allowed tenancy of instances launched into the VPC.
@@ -110853,7 +112143,8 @@ type VpcIpv6CidrBlockAssociation struct {
 	// The ID of the IPv6 address pool from which the IPv6 CIDR block is allocated.
 	Ipv6Pool *string `locationName:"ipv6Pool" type:"string"`
 
-	// The name of the location from which we advertise the IPV6 CIDR block.
+	// The name of the unique set of Availability Zones, Local Zones, or Wavelength
+	// Zones from which AWS advertises IP addresses, for example, us-east-1-wl1-bos-wlz-1.
 	NetworkBorderGroup *string `locationName:"networkBorderGroup" type:"string"`
 }
 
@@ -112063,6 +113354,9 @@ const (
 
 	// CapacityReservationInstancePlatformLinuxwithSqlserverEnterprise is a CapacityReservationInstancePlatform enum value
 	CapacityReservationInstancePlatformLinuxwithSqlserverEnterprise = "Linux with SQL Server Enterprise"
+
+	// CapacityReservationInstancePlatformWindowsByol is a CapacityReservationInstancePlatform enum value
+	CapacityReservationInstancePlatformWindowsByol = "Windows BYOL"
 )
 
 const (
@@ -112096,6 +113390,20 @@ const (
 
 	// CapacityReservationTenancyDedicated is a CapacityReservationTenancy enum value
 	CapacityReservationTenancyDedicated = "dedicated"
+)
+
+const (
+	// CarrierGatewayStatePending is a CarrierGatewayState enum value
+	CarrierGatewayStatePending = "pending"
+
+	// CarrierGatewayStateAvailable is a CarrierGatewayState enum value
+	CarrierGatewayStateAvailable = "available"
+
+	// CarrierGatewayStateDeleting is a CarrierGatewayState enum value
+	CarrierGatewayStateDeleting = "deleting"
+
+	// CarrierGatewayStateDeleted is a CarrierGatewayState enum value
+	CarrierGatewayStateDeleted = "deleted"
 )
 
 const (
@@ -113102,6 +114410,33 @@ const (
 	// InstanceTypeR6g16xlarge is a InstanceType enum value
 	InstanceTypeR6g16xlarge = "r6g.16xlarge"
 
+	// InstanceTypeR6gdMetal is a InstanceType enum value
+	InstanceTypeR6gdMetal = "r6gd.metal"
+
+	// InstanceTypeR6gdMedium is a InstanceType enum value
+	InstanceTypeR6gdMedium = "r6gd.medium"
+
+	// InstanceTypeR6gdLarge is a InstanceType enum value
+	InstanceTypeR6gdLarge = "r6gd.large"
+
+	// InstanceTypeR6gdXlarge is a InstanceType enum value
+	InstanceTypeR6gdXlarge = "r6gd.xlarge"
+
+	// InstanceTypeR6gd2xlarge is a InstanceType enum value
+	InstanceTypeR6gd2xlarge = "r6gd.2xlarge"
+
+	// InstanceTypeR6gd4xlarge is a InstanceType enum value
+	InstanceTypeR6gd4xlarge = "r6gd.4xlarge"
+
+	// InstanceTypeR6gd8xlarge is a InstanceType enum value
+	InstanceTypeR6gd8xlarge = "r6gd.8xlarge"
+
+	// InstanceTypeR6gd12xlarge is a InstanceType enum value
+	InstanceTypeR6gd12xlarge = "r6gd.12xlarge"
+
+	// InstanceTypeR6gd16xlarge is a InstanceType enum value
+	InstanceTypeR6gd16xlarge = "r6gd.16xlarge"
+
 	// InstanceTypeX116xlarge is a InstanceType enum value
 	InstanceTypeX116xlarge = "x1.16xlarge"
 
@@ -113347,6 +114682,33 @@ const (
 
 	// InstanceTypeC6g16xlarge is a InstanceType enum value
 	InstanceTypeC6g16xlarge = "c6g.16xlarge"
+
+	// InstanceTypeC6gdMetal is a InstanceType enum value
+	InstanceTypeC6gdMetal = "c6gd.metal"
+
+	// InstanceTypeC6gdMedium is a InstanceType enum value
+	InstanceTypeC6gdMedium = "c6gd.medium"
+
+	// InstanceTypeC6gdLarge is a InstanceType enum value
+	InstanceTypeC6gdLarge = "c6gd.large"
+
+	// InstanceTypeC6gdXlarge is a InstanceType enum value
+	InstanceTypeC6gdXlarge = "c6gd.xlarge"
+
+	// InstanceTypeC6gd2xlarge is a InstanceType enum value
+	InstanceTypeC6gd2xlarge = "c6gd.2xlarge"
+
+	// InstanceTypeC6gd4xlarge is a InstanceType enum value
+	InstanceTypeC6gd4xlarge = "c6gd.4xlarge"
+
+	// InstanceTypeC6gd8xlarge is a InstanceType enum value
+	InstanceTypeC6gd8xlarge = "c6gd.8xlarge"
+
+	// InstanceTypeC6gd12xlarge is a InstanceType enum value
+	InstanceTypeC6gd12xlarge = "c6gd.12xlarge"
+
+	// InstanceTypeC6gd16xlarge is a InstanceType enum value
+	InstanceTypeC6gd16xlarge = "c6gd.16xlarge"
 
 	// InstanceTypeCc14xlarge is a InstanceType enum value
 	InstanceTypeCc14xlarge = "cc1.4xlarge"
@@ -113740,6 +115102,33 @@ const (
 
 	// InstanceTypeM6g16xlarge is a InstanceType enum value
 	InstanceTypeM6g16xlarge = "m6g.16xlarge"
+
+	// InstanceTypeM6gdMetal is a InstanceType enum value
+	InstanceTypeM6gdMetal = "m6gd.metal"
+
+	// InstanceTypeM6gdMedium is a InstanceType enum value
+	InstanceTypeM6gdMedium = "m6gd.medium"
+
+	// InstanceTypeM6gdLarge is a InstanceType enum value
+	InstanceTypeM6gdLarge = "m6gd.large"
+
+	// InstanceTypeM6gdXlarge is a InstanceType enum value
+	InstanceTypeM6gdXlarge = "m6gd.xlarge"
+
+	// InstanceTypeM6gd2xlarge is a InstanceType enum value
+	InstanceTypeM6gd2xlarge = "m6gd.2xlarge"
+
+	// InstanceTypeM6gd4xlarge is a InstanceType enum value
+	InstanceTypeM6gd4xlarge = "m6gd.4xlarge"
+
+	// InstanceTypeM6gd8xlarge is a InstanceType enum value
+	InstanceTypeM6gd8xlarge = "m6gd.8xlarge"
+
+	// InstanceTypeM6gd12xlarge is a InstanceType enum value
+	InstanceTypeM6gd12xlarge = "m6gd.12xlarge"
+
+	// InstanceTypeM6gd16xlarge is a InstanceType enum value
+	InstanceTypeM6gd16xlarge = "m6gd.16xlarge"
 )
 
 const (
